@@ -1,0 +1,31 @@
+{
+    "Description" : "Create an SWS EC@ instance with CloudFormation",
+    "Resources" : {
+        "EC2InstanceDemo" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                
+                "AvailabilityZone" : "us-east-1c",
+                "ImageId" : "ami-087c17d1fe0178315",
+                "InstanceType" : "t2.micro",
+                "KeyName" : "saima_kp",
+                "NetworkInterfaces" : [ 
+                    {
+                        "AssociatePublicIpAddress" : true,
+                        "DeleteOnTermination" : true,
+                        "DeviceIndex" : "0",
+                        "GroupSet" : [
+                            
+                            "sg-08e694c6c829559ca" 
+                            
+                        ],
+                        "SubnetId" : "subnet-a818bc86"
+                    }
+                    
+                ]
+            }
+    }
+    
+        
+      }
+  }
