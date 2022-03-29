@@ -1,0 +1,46 @@
+import boto3
+import json
+
+import botocore
+# import operator
+list_checks = []
+
+regions=['af-south-1', 'eu-north-1', 'ap-south-1', 'eu-west-3', 'eu-west-2', 'eu-south-1', 'eu-west-1', 'ap-northeast-3', 'ap-northeast-2', 'me-south-1', 'ap-northeast-1', 'sa-east-1', 'ca-central-1', 'ap-east-1', 'ap-southeast-1', 'ap-southeast-2', 'eu-central-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
+# for j in regions:
+try:
+    print("Here are all the S3 Buckets")
+    print("..................................................................................................")
+
+
+    ta_client = boto3.client('support')
+
+    response1 = ta_client.describe_cases(language='en')
+    print(response1)
+    # print(len(response1['Buckets']))                                                            
+    # for checks in response1['Buckets']:
+
+    #     print(checks['Name'])
+        
+    #     list_checks.append(checks['Name'])
+            
+
+        # # if 'NextToken' in  response1.keys():
+        # #     next_token = response1['NextToken']
+            
+        # # else:
+        # #     break
+        # print(list_buckets)
+    
+    # print("here")
+    # def myFunc(e):
+    #     return e[4]
+    # list_ssm.sort(key=myFunc)
+    # print(list_ssm)
+
+
+except Exception as e:
+    print ( "Exception occured ")
+    print(e)
+    # continue
+
+            
