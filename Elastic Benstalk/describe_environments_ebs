@@ -1,0 +1,110 @@
+import boto3
+import json
+
+import botocore
+# import operator
+list_environments = []
+
+regions=['af-south-1', 'eu-north-1', 'ap-south-1', 'eu-west-3', 'eu-west-2', 'eu-south-1', 'eu-west-1', 'ap-northeast-3', 'ap-northeast-2', 'me-south-1', 'ap-northeast-1', 'sa-east-1', 'ca-central-1', 'ap-east-1', 'ap-southeast-1', 'ap-southeast-2', 'eu-central-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
+for j in regions:
+    try:
+        print("Here are all the EB Environments from "+ j +" region")
+        print("..................................................................................................")
+
+
+        ebs_client = boto3.client('elasticbeanstalk',region_name = j)
+        
+        next_token = None
+       
+        while True:
+            response1 = ebs_client.describe_environments(NextToken= next_token) if next_token else ebs_client.describe_environments()
+            print(response1['Environments'])                                                            
+            for env in response1['Environments']:
+                
+                
+                print(env['EnvironmentName']) 
+                print(env['ApplicationName'])
+
+                status =  env['Status']
+                status_priority = 0
+                abortableOperation = env['AbortableOperationInProgress']
+                abortableOperation_priority = 0
+                health = env['Health']
+                health_priority = 0
+                healthStatus = env['HealthStatus']
+                healthStatus_priority = 0
+
+                if status == "Ready" or status =="Terminated":
+                    status_priority =1
+                if status == "Aborting" or status =="Terminating":
+                    status_priority =2
+                if status == "LinkingFrom" or status =="LinkingTo":
+                    status_priority =3
+                if status == "Launching" or status =="Updating":
+                    status_priority =4
+           
+                if abortableOperation == False :
+                    abortableOperation_priority =1               
+                if abortableOperation == True :
+                    abortableOperation_priority =2    
+                    
+                               
+                if health == "Green" :
+                    health_priority =1
+                if health == "Grey" :
+                    health_priority =2
+                if health == "Yellow" :
+                    health_priority =3 
+                if health == "Red" :
+                    health_priority =4 
+
+
+
+                if healthStatus == "Info" or healthStatus =="Warning" or healthStatus =="Degraded" or healthStatus =="Unknown" or healthStatus == "NoData":
+                    healthStatus_priority = 1
+                if healthStatus == "Ok" or healthStatus =="Severe" or healthStatus =="Suspended" or healthStatus =="Pending":
+                    healthStatus_priority = 2
+                
+
+
+                rank = 0
+                rank = (status_priority* abortableOperation_priority) + (health_priority*healthStatus_priority )
+
+
+                
+              
+
+                list_environments.append((env['EnvironmentName'],status, abortableOperation, health, healthStatus, rank))
+               
+
+                
+                         
+
+
+            print(" total count of environtments " + str(len(list_environments)))
+            # print("count per region " + str(len(repo_per_region)))
+
+            
+            if 'NextToken' in  response1.keys():
+                next_token = response1['NextToken']
+                
+            else:
+                break
+        print(list_environments)
+        
+        # print("here")
+        # def myFunc(e):
+        #     return e[4]
+        # list_ssm.sort(key=myFunc)
+        # print(list_ssm)
+
+
+    except Exception as e :
+        print ( "Exception occured ")
+        print(e)
+        continue
+                
+
+
+
+
