@@ -1,0 +1,607 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+generator appsync {
+  provider = "prisma-appsync"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model aws_devops_services_list {
+  id            Int     @id(map: "aws_devops_services_pkey") @default(autoincrement())
+  service_name  String? @db.VarChar
+  resource_type String? @db.VarChar
+}
+
+model cockpit_types {
+  id           Int     @id @default(autoincrement())
+  cockpit_id   String? @default(dbgenerated("uuid_generate_v4()")) @db.VarChar
+  cockpit_name String? @db.VarChar
+}
+
+model codepipeline_events {
+  region                String? @db.VarChar
+  time                  String? @db.VarChar
+  source                String? @db.VarChar
+  resource              String? @db.VarChar
+  action                String? @db.VarChar
+  state                 String? @db.VarChar
+  costly_resource_avg   Int?
+  resource_priority_avg Int?
+  detail_type           String? @db.VarChar
+  id                    Int     @id @default(autoincrement())
+}
+
+model events {
+  region       String?   @db.VarChar
+  source       String?   @db.VarChar
+  resource     String?   @db.VarChar
+  action       String?   @db.VarChar
+  state        String?   @db.VarChar
+  detail_type  String?   @db.VarChar
+  id           Int       @id @default(autoincrement())
+  time         DateTime? @db.Timestamptz(6)
+  resource_arn String?   @db.VarChar
+  quadrant     String?   @db.Char(2)
+  tanent_id    String?   @db.VarChar
+}
+
+model rf_testing {
+  id                    Int       @id @default(autoincrement())
+  time                  DateTime? @db.Timestamptz(6)
+  region                String?   @db.VarChar
+  region_priority       Int?
+  event_source          String?   @db.VarChar
+  service_priority      Int?
+  resource_name         String?   @db.VarChar
+  resource_prioirty     String?   @db.VarChar
+  resource_arn          String?   @db.VarChar
+  the_event             String?   @db.VarChar
+  event_state           String?   @db.VarChar
+  costly_resource_value Int?
+  tag_priority          Int?
+  quadrant              String?   @db.VarChar
+}
+
+model rf_training {
+  id                    Int       @id @default(autoincrement())
+  time                  DateTime? @db.Timestamptz(6)
+  region                String?   @db.VarChar
+  region_priority       Int?
+  event_source          String?   @db.VarChar
+  service_priority      Int?
+  resource_name         String?   @db.VarChar
+  resource_prioirty     String?   @db.VarChar
+  resource_arn          String?   @db.VarChar
+  the_event             String?   @db.VarChar
+  event_state           String?   @db.VarChar
+  costly_resource_value Int?
+  tag_priority          Int?
+  quadrant              String?   @db.VarChar
+}
+
+model ActionItemList {
+  id               Int              @id @default(autoincrement())
+  created_at       DateTime         @default(now())
+  update_at        DateTime         @default(now())
+  tanent_id        String           @db.VarChar
+  app_id           String           @db.VarChar
+  name             String?          @db.VarChar
+  decription       String?          @db.VarChar
+  status           status
+  role             role
+  priority_rank    Decimal          @db.Decimal
+  priority_state   priority_state
+  action_list_type action_list_type
+  take_action_by   DateTime?        @db.Date
+  impact_level     impact_level
+  priority_level   priority_level
+  event_id         Int
+  EventAction      EventAction      @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_event")
+  Tag              Tag[]
+}
+
+model PriorityResource {
+  id                  Int      @id @default(autoincrement())
+  resource_arn        String   @db.VarChar
+  name                String?  @db.VarChar
+  created_time        DateTime
+  service_name        String   @db.VarChar
+  action_item_list_id Int
+  resource_type       String   @db.VarChar
+  status              status
+  owner_id            Int
+  iam_role            String   @db.VarChar
+  region              regions
+  User                User     @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_owner")
+  Tag                 Tag[]
+}
+
+model Link {
+  id                  Int     @id @default(autoincrement())
+  link_url            String  @db.VarChar
+  description         String? @db.VarChar
+  action_item_list_id Int
+  linked_jira_issue   String? @db.VarChar
+}
+
+model User {
+  id                  Int                @id @default(autoincrement())
+  user_name           String             @db.VarChar
+  user_email          String             @db.VarChar
+  cognito_userpool_id String             @db.VarChar
+  status              Boolean
+  full_name           String             @db.VarChar
+  ActionItem          ActionItem[]
+  Attachment          Attachment[]
+  PriorityResource    PriorityResource[]
+}
+
+model ActionItem {
+  id                  Int                @id @default(autoincrement())
+  owner_id            Int?
+  action_details      String             @db.VarChar
+  views               Int?               @default(1)
+  votes               Int?               @default(1)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime
+  status              status?
+  action_msg          String             @db.VarChar
+  action_json         Json               @db.Json
+  action_type         action_item_type
+  event_data          Json               @db.Json
+  event_data_s3       String             @db.VarChar
+  log_query           String[]           @db.VarChar
+  auto_action         Json               @db.Json
+  action_item_list_id Int
+  run_as              auto_action_groups
+  User                User?              @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_owner")
+  Tag                 Tag[]
+}
+
+model Attachment {
+  id             Int      @id @default(autoincrement())
+  author_id      Int?
+  user_role      role
+  description    String   @db.VarChar
+  views          Int?
+  votes          Int?
+  published      Boolean? @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime
+  status         String   @db.VarChar
+  action_item_id Int
+  User           User?    @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_author")
+  Tag            Tag[]
+}
+
+model Tag {
+  id                   Int               @id @default(autoincrement())
+  key                  String            @db.VarChar
+  value                String            @db.VarChar
+  tag_type             String?           @db.VarChar
+  attachment_id        Int?
+  action_item_id       Int?
+  action_item_list_id  Int?
+  priority_resource_id Int?
+  ActionItem           ActionItem?       @relation(fields: [action_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_action_item")
+  ActionItemList       ActionItemList?   @relation(fields: [action_item_list_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_action_item_list")
+  Attachment           Attachment?       @relation(fields: [attachment_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_attachment")
+  PriorityResource     PriorityResource? @relation(fields: [priority_resource_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_priority_resource")
+}
+
+model tenants {
+  id             Int       @id @default(autoincrement())
+  type_name      String?   @db.VarChar
+  tenant_id      String?   @db.VarChar
+  company_name   String?   @db.VarChar
+  update_at      DateTime? @db.Timestamp(6)
+  admin_email    String?   @db.VarChar
+  created_at     DateTime? @db.Timestamp(6)
+  tenant_domain  String?   @db.VarChar
+  tenant_address String?   @db.VarChar
+  item_id        String?   @db.VarChar
+  full_name      String?   @db.VarChar
+}
+
+model user_service {
+  id             Int       @id @default(autoincrement())
+  user_id        String?   @db.VarChar
+  type_name      String?   @db.VarChar
+  created_at     DateTime? @db.Timestamp(6)
+  update_at      DateTime? @db.Timestamp(6)
+  user_email     String?   @db.VarChar
+  user_name      String?   @db.VarChar
+  user_role      String?   @db.VarChar
+  user_sub       String?   @db.VarChar
+  user_tenant_id String?   @db.VarChar
+}
+
+model EventAction {
+  id               Int              @id @default(autoincrement())
+  created_at       DateTime?        @default(now())
+  update_at        DateTime?        @default(now())
+  issue_type       String           @default("Issue type unknown") @db.VarChar
+  action_details   String?          @default("Need Action according to the issue and action type") @db.VarChar
+  event_log        String           @db.VarChar
+  event_log_source event_log_source @default(All_Log_Sources)
+  status           priority_state
+  urgency          urgency
+  importance       importance
+  decision         decision
+  priority_group   priority_group
+  priority_rank    Int
+  ActionItemList   ActionItemList[]
+}
+
+model AutoActionRegister {
+  id                      Int                  @id @default(autoincrement())
+  created_at              DateTime             @default(now())
+  update_at               DateTime             @default(now())
+  action_list_type        action_list_type
+  auto_action_name        String               @db.VarChar
+  auto_action_details     String?              @db.VarChar
+  auto_action_groups      auto_action_groups
+  auto_action_settings    auto_action_settings
+  compliance_level        compliance_level
+  zen_coin_config         zen_coin_config
+  auto_action_pattern     auto_action_pattern
+  permission              permission
+  secret_storage_endpoint String               @db.VarChar
+  permission_keys         String               @db.VarChar
+  repo_type               repo_type
+  source_code_repo_link   String?              @db.VarChar
+  access_policy           String               @db.VarChar
+  register_option         register_option
+}
+
+model cloudformation_failed_events {
+  id                   Int     @id @default(autoincrement())
+  stackid              String?
+  timestamp            String?
+  eventid              String?
+  logicalresourceid    String?
+  namespace            String?
+  physicalresourceid   String?
+  principalid          String?
+  resourceproperties   String?
+  resourcestatus       String?
+  resourcestatusreason String?
+  resourcetype         String?
+  stackname            String?
+  clientrequesttoken   String?
+}
+
+model dvs_cr_codebuild {
+  id                       Int       @id @default(autoincrement())
+  project_name             String?   @unique @db.VarChar
+  failed_count             Int?
+  build_priority           Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_cr_codepipeline {
+  id                       Int       @id @default(autoincrement())
+  pipeline_name            String?   @unique @db.VarChar
+  count                    Int?
+  pipe_priority            Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_cr_lambda {
+  id                       Int       @id @default(autoincrement())
+  function_name            String?   @unique @db.VarChar
+  error_count              Int?
+  function_priority        Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_region_priority {
+  id                       Int       @id @default(autoincrement())
+  region                   String?   @unique @db.VarChar
+  resource_count           Int?
+  region_priority          Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_rp_codebuild {
+  id                       Int       @id @default(autoincrement())
+  project_name             String?   @unique @db.VarChar
+  succeed_count            Int?
+  build_priority           Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_rp_codepipeline {
+  id                       Int       @id @default(autoincrement())
+  pipeline_name            String?   @unique @db.VarChar
+  count                    Int?
+  pipe_priority            Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_rp_lambda {
+  id                       Int       @id @default(autoincrement())
+  function_name            String?   @unique @db.VarChar
+  frequency                Int?
+  function_priority        Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+model dvs_rp_tags {
+  id                       Int       @id @default(autoincrement())
+  key                      String?   @db.VarChar
+  value                    String?   @db.VarChar
+  count                    Int?
+  tag_priority             Int?
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+
+  @@unique([key, value])
+}
+
+model dvs_rp_tags_services {
+  id                   Int       @id @default(autoincrement())
+  service_arn          String?   @db.VarChar
+  key                  String?   @db.VarChar
+  value                String?   @db.VarChar
+  tenant_id            String?   @db.VarChar
+  app_id               String?   @db.VarChar
+  last_update_time_utc DateTime? @db.Timestamptz(6)
+}
+
+model dvs_rules_table {
+  rule_id         Int     @id(map: "devops_rules_table_pkey") @default(autoincrement())
+  rule_source     String? @db.VarChar
+  rule            String?
+  base_importance Int?    @db.SmallInt
+  base_urgency    Int?    @db.SmallInt
+}
+
+model dvs_srvc_prty {
+  id                       Int       @id @default(autoincrement())
+  resource_type            String?   @unique @db.VarChar
+  resource_taws            String?   @db.VarChar
+  count                    Int?
+  service_priority         Int?
+  last_update_time_utc     DateTime? @db.Timestamptz(6)
+  tenant_id                String?   @db.VarChar
+  app_id                   String?   @db.VarChar
+  dev_engineer_priority    Int?
+  devops_engineer_priority Int?
+  dev_lead_priority        Int?
+}
+
+enum priority_state {
+  In_progress @map("In-progress")
+  Failed
+  Done
+  In_Progress @map("In Progress")
+  Signal
+  New
+  No_Action @map("No Action")
+  Confirmed
+  Review
+  Approve
+}
+
+enum role {
+  DEV
+  OPS
+  LEAD
+  ADMIN
+}
+
+enum status {
+  Signal
+  Accepted
+  Execution_In_Progress @map("Execution In Progress")
+  Failed_to_start @map("Failed to start")
+  Delegated
+  Done
+}
+
+enum action_item_type {
+  Serverless_Action_Template @map("Serverless Action Template")
+  Proton_Template @map("Proton Template")
+  TerraForm
+  Invetigate
+  Approval
+  Run_Command @map("Run Command")
+  CDK_Code_Build @map("CDK Code Build")
+  Log_Task @map("Log Task")
+  ECS_Task_Template @map("ECS Task Template")
+}
+
+enum action_list_type {
+  FinOps_Goal_Specific_AL @map("FinOps Goal Specific AL")
+  DevOps_Goal_AL @map("DevOps Goal AL")
+  Compliance_Goal_AL @map("Compliance Goal AL")
+  SV1_Issue_AL @map("SV1 Issue AL")
+  Network_Issue_AL @map("Network Issue AL")
+  User_defined_AL @map("User defined AL")
+  ML_triggered_AL @map("ML triggered AL")
+  Analytical_issue_AL @map("Analytical issue AL")
+  Build_Specific_AL @map("Build Specific AL")
+  Test_AL @map("Test AL")
+  Mindful_AL @map("Mindful AL")
+  ZENMASTER_AL @map("ZENMASTER AL")
+  Release_AL @map("Release AL")
+  Compliance_AL @map("Compliance AL")
+  CloudOps_AL @map("CloudOps AL")
+  Mindful_Goal_AL @map("Mindful Goal AL")
+  FinOps_Goal_AL @map("FinOps Goal AL")
+  CloudOps_Goal_AL @map("CloudOps Goal AL")
+  SecOps_Goal_AL @map("SecOps Goal AL")
+  Issue_AL @map("Issue AL")
+  Build_AL @map("Build AL")
+  Architect_AL @map("Architect AL")
+  FinOps_AL @map("FinOps AL")
+  ZenMaster_AL @map("ZenMaster AL")
+}
+
+enum decision {
+  Do_Now @map("Do Now")
+  Plan_to_do_now @map("Plan to do now")
+  ZenMAster_Delegate @map("ZenMAster Delegate")
+  Delegate_to_Active_Support @map("Delegate to Active Support")
+}
+
+enum importance {
+  Important
+  Not_Important @map("Not Important")
+}
+
+enum priority_group {
+  A
+  B
+  C
+  D
+}
+
+enum urgency {
+  Urgent
+  Not_Urgent @map("Not Urgent")
+}
+
+enum auto_action_groups {
+  Approval
+  Automation
+  Get_Logs @map("Get Logs")
+  Container_action @map("Container action")
+  Pipeline_task @map("Pipeline task")
+  Get_Metrics @map("Get Metrics")
+  Cost_Optimization @map("Cost Optimization")
+  Run_Playbook @map("Run Playbook")
+  Lambda_task @map("Lambda task")
+}
+
+enum event_log_source {
+  Cloud_Watch_Log_Group @map("Cloud Watch Log Group")
+  CloudTrail_Event_Log @map("CloudTrail Event Log")
+  Priority_Event_Log_Groups @map("Priority Event Log Groups")
+  Search_Resoruce_Live_CMDB @map("Search Resoruce Live CMDB")
+  OpenSearch_Index @map("OpenSearch Index")
+  All_Log_Sources @map("All Log Sources")
+}
+
+enum impact_level {
+  Business_Critical_Impact @map("Business Critical Impact")
+  System_Ops_Related_Impact @map("System Ops Related Impact")
+  Integrated_System_Impact @map("Integrated System Impact")
+  Release_System_Impact @map("Release System Impact")
+}
+
+enum priority_level {
+  Important___Urgent @map("Important & Urgent")
+  Important___Not_Urgent @map("Important & Not Urgent")
+  Not_Important___Urgent @map("Not Important & Urgent")
+  Not_Important___Not_Urgent @map("Not Important & Not Urgent")
+}
+
+enum regions {
+  af_south_1 @map("af-south-1")
+  eu_north_1 @map("eu-north-1")
+  ap_south_1 @map("ap-south-1")
+  eu_west_3 @map("eu-west-3")
+  eu_west_2 @map("eu-west-2")
+  eu_south_1 @map("eu-south-1")
+  eu_west_1 @map("eu-west-1")
+  ap_northeast_3 @map("ap-northeast-3")
+  ap_northeast_2 @map("ap-northeast-2")
+  me_south_1 @map("me-south-1")
+  ap_northeast_1 @map("ap-northeast-1")
+  sa_east_1 @map("sa-east-1")
+  ca_central_1 @map("ca-central-1")
+  ap_east_1 @map("ap-east-1")
+  ap_southeast_1 @map("ap-southeast-1")
+  ap_southeast_2 @map("ap-southeast-2")
+  eu_central_1 @map("eu-central-1")
+  us_east_1 @map("us-east-1")
+  us_east_2 @map("us-east-2")
+  us_west_1 @map("us-west-1")
+  us_west_2 @map("us-west-2")
+}
+
+enum auto_action_pattern {
+  CDK
+  Serverless
+}
+
+enum auto_action_settings {
+  Public
+  Private
+}
+
+enum compliance_level {
+  PCI
+  NPI
+}
+
+enum permission {
+  read
+  write
+  dublicate
+  no_replication @map("no-replication")
+}
+
+enum register_option {
+  Upload
+  Update
+  Upload_and_Update @map("Upload and Update")
+}
+
+enum repo_type {
+  S3
+  GitHub
+  CodeCommit
+}
+
+enum zen_coin_config {
+  On
+  Off
+}

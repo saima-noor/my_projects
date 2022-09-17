@@ -1,0 +1,15 @@
+{
+  "name": "appsyncprismaprod1v3",
+  "version": "1.0.0",
+  "scripts": {
+    
+    "deploy": "prisma generate && cd cdk && npx aws-cdk deploy --require-approval=never"
+  },
+  "devDependencies": {
+    "prisma": "^3.10.0",
+    "prisma-appsync": "^1.0.0-beta.58.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^3.10.0"
+  }
+}
